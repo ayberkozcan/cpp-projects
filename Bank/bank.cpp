@@ -3,8 +3,13 @@
 #include <string>
 #include <chrono>
 #include <thread>
+#include <cstdlib>
+#include <ctime>
+#include <vector>
 
 using namespace std;
+
+vector<class BankAccount> registeredAccounts;
 
 class BankAccount {
 private:
@@ -13,17 +18,19 @@ private:
     string birthYear;
     string email;
     string password;
+    string accno;
     int balance;
 
 public:
-    BankAccount(string n, string s, string b, string e, string p)
-        : name(n), surname(s), birthYear(b), email(e), password(p), balance(0) {}
+    BankAccount(string n, string s, string b, string e, string p, string a)
+        : name(n), surname(s), birthYear(b), email(e), password(p), accno(a), balance(0) {}
 
     string getName() const { return name; }
     string getSurname() const { return surname; }
     string getBirthYear() const { return birthYear; }
     string getEmail() const { return email; }
     string getPassword() const { return password; }
+    string getAccountNumber() const { return accno; }
     int getBalance() const { return balance; }
 
     void addBalance(int amount) { balance += amount; }
@@ -35,10 +42,12 @@ void addMoney(BankAccount& account);
 void withdrawMoney(BankAccount& account);
 
 bool loginControl(const string& acc_no, const string& password) {
-    if (acc_no == "12345" && password == "12345") {
-        return true;
-    } else {
-        return false;
+    for (const auto& account : registeredAccounts) {
+        if (account.getAccountNumber() == acc_no && account.getPassword() == password) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
 
@@ -113,14 +122,16 @@ int main() {
                 cin >> password;
 
                 if (loginControl(acc_no, password)) {
-                    cout << "Login Successful!" << endl;
-                    cout << "Redirecting to homepage..." << endl;
+                    for (auto& account : registeredAccounts) {
+                        if (account.getAccountNumber() == acc_no) {
+                            cout << "Login Successful!" << endl;
+                            cout << "Redirecting to homepage..." << endl;
 
-                    BankAccount account("x", "x", "x", "x", "x");
-
-                    loggedInAccount = &account;
-
-                    showHomepage(*loggedInAccount);
+                            loggedInAccount = &account;
+                            showHomepage(*loggedInAccount);
+                            break;
+                        }
+                    }
                 } else {
                     cout << "Invalid credentials, please try again!" << endl;
                 }
@@ -141,8 +152,14 @@ int main() {
                 cout << "Password: ";
                 cin >> password;
 
-                BankAccount newAccount(name, surname, birthYear, email, password);
+                srand(time(nullptr));
+                string accno = to_string(10000 + rand() % 90000);
+
+                BankAccount newAccount(name, surname, birthYear, email, password, accno);
+                registeredAccounts.push_back(newAccount);
+
                 cout << "\nAccount created successfully!" << endl;
+                cout << "\nAccount Number: " << newAccount.getAccountNumber() << endl;
                 break;
             }
 
