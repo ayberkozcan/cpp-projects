@@ -6,6 +6,7 @@
 #include <cstdlib>
 #include <ctime>
 #include <vector>
+#include <regex>
 
 using namespace std;
 
@@ -38,6 +39,7 @@ public:
 };
 
 void showHomepage(BankAccount& account);
+void viewBalance(BankAccount& account);
 void addMoney(BankAccount& account);
 void withdrawMoney(BankAccount& account);
 
@@ -55,30 +57,36 @@ void showHomepage(BankAccount& account) {
     int action;
 
     while(true) {
-        cout << "-------------------\nHomepage" << endl;
-        cout << "Your Balance: " << account.getBalance() << endl;
-        cout << "Choose action below" << endl;
-        cout << "(1) Add Money" << endl;
-        cout << "(2) Withdraw Money" << endl;
-        cout << "(3) Quit" << endl;
+        cout << "-------------------\nHomepage\n" << endl;
+        cout << "\nChoose action below" << endl;
+        cout << "(1) View Balance" << endl;
+        cout << "(2) Add Money" << endl;
+        cout << "(3) Withdraw Money" << endl;
+        cout << "(4) Quit" << endl;
         cin >> action;
 
         switch (action)
         {
         case 1:
-            addMoney(account);
+            viewBalance(account);
             break;
         case 2:
-            withdrawMoney(account);
+            addMoney(account);
             break;
         case 3:
-            cout << "Exiting..." << endl;
+            withdrawMoney(account);
+            break;
+        case 4:
             exit(0);
             break;
         default:
-            cout << "Invalid action. Please select a valid option." << endl;
+            cout << "Invalid action. Please select a valid option.\n" << endl;
         }
     }
+}
+
+void viewBalance(BankAccount& account) {
+    cout << "Balance: " << account.getBalance() << endl;
 }
 
 void addMoney(BankAccount& account) {
@@ -126,6 +134,7 @@ int main() {
                         if (account.getAccountNumber() == acc_no) {
                             cout << "Login Successful!" << endl;
                             cout << "Redirecting to homepage..." << endl;
+                            system("cls");
 
                             loggedInAccount = &account;
                             showHomepage(*loggedInAccount);
@@ -139,18 +148,63 @@ int main() {
             }
 
             case 2: {
+                system("cls");
                 string name, surname, birthYear, email, password;
                 cout << "Create an Account" << endl;
                 cout << "Name: ";
-                cin >> name;
+                while(true) {
+                    cin >> name;
+                    if (name.length() < 3 || name.length() >30) {
+                        cout << "Please enter a valid name (between 3 and 30 characters)!" << endl;
+                    } else {
+                        break;
+                    }
+                }
                 cout << "Surname: ";
-                cin >> surname;
+                while(true) {
+                    cin >> surname;
+                    if (surname.length() < 2 || surname.length() >30) {
+                        cout << "Please enter a valid surname (between 2 and 30 characters)!" << endl;
+                    } else {
+                        break;
+                    }
+                }
                 cout << "Birth Year: ";
-                cin >> birthYear;
+                while(true) {
+                    cin >> birthYear;
+
+                    time_t t = time(0);
+                    struct tm *now = localtime(&t);
+
+                    int currentYear = 1900 + now->tm_year;
+
+                    if (stoi(birthYear) < 1900 || stoi(birthYear) > currentYear - 18) {
+                        cout << "Please enter a valid birth year (between 1900 and " << currentYear - 18 << ")!" << endl;
+                    } else {
+                        break;
+                    }
+                }
                 cout << "Email: ";
-                cin >> email;
+                while(true) {
+                    cin >> email;
+
+                    regex emailPattern(R"((\w+)(\.\w+)*@(\w+\.)+[a-zA-Z]{2,})");
+
+                    if (email.length() < 5 || email.length() > 30 || !regex_match(email, emailPattern)) {
+                        cout << "Please enter a valid email!" << endl;
+                    } else {
+                        break;
+                    }
+                }
                 cout << "Password: ";
-                cin >> password;
+                while(true) {
+                    cin >> password;
+                    if (password.length() < 5 || password.length() >20) {
+                        cout << "Please enter a valid name (between 5 and 20 characters)!" << endl;
+                    } else {
+                        break;
+                    }
+                }
 
                 srand(time(nullptr));
                 string accno = to_string(10000 + rand() % 90000);
@@ -158,12 +212,14 @@ int main() {
                 BankAccount newAccount(name, surname, birthYear, email, password, accno);
                 registeredAccounts.push_back(newAccount);
 
-                cout << "\nAccount created successfully!" << endl;
-                cout << "\nAccount Number: " << newAccount.getAccountNumber() << endl;
+                system("cls");
+                cout << "Account created successfully!" << endl;
+                cout << "\nAccount Number: " << newAccount.getAccountNumber() << "\n" << endl;
                 break;
             }
 
             default:
+                system("cls");
                 cout << "Invalid choice, please try again!" << endl;
         }
     }
