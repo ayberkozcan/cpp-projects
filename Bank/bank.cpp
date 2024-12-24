@@ -62,7 +62,8 @@ void showHomepage(BankAccount& account) {
         cout << "(1) View Balance" << endl;
         cout << "(2) Add Money" << endl;
         cout << "(3) Withdraw Money" << endl;
-        cout << "(4) Quit" << endl;
+        cout << "(4) View Interest Rates" << endl;
+        cout << "(5) Quit" << endl;
         cin >> action;
 
         switch (action)
@@ -77,6 +78,62 @@ void showHomepage(BankAccount& account) {
             withdrawMoney(account);
             break;
         case 4:
+            cout << "\n32 Days: 3%" << endl; 
+            cout << "90 Days: 4%" << endl; 
+            cout << "180 Days: 4.5%" << endl; 
+            cout << "\n(1) Interest Calculator" << endl;
+            cout << "(2) Back" << endl;
+
+            cin >> action;
+
+            switch (action)
+            {
+                case 1: {
+                    int day;
+                    double money;
+                    
+                    cout << "Money (amount to deposit): " << endl;
+                    cin >> money;
+
+                    while(true) {
+                        cout << "Days (32, 90 or 180): " << endl;
+                        cin >> day;
+
+                        double interestRate = 0.0;
+                        double interest = 0.0;
+
+                        if (day == 32) {
+                            interestRate = 0.03;
+                            interest = money * interestRate * (day / 365.0);
+                            cout << "Interest rate for 32 days is 3%" << endl;
+                            cout << "Interest earned: " << interest << endl;
+                        } 
+                        else if (day == 90) {
+                            interestRate = 0.04;
+                            interest = money * interestRate * (day / 365.0);
+                            cout << "Interest rate for 90 days is 4%" << endl;
+                            cout << "Interest earned: " << interest << endl;
+                        } 
+                        else if (day == 180) {
+                            interestRate = 0.045;
+                            interest = money * interestRate * (day / 365.0);
+                            cout << "Interest rate for 180 days is 4.5%" << endl;
+                            cout << "Interest earned: " << interest << endl;
+                        }
+                        else {
+                            cout << "Invalid day entered!\n" << endl;
+                            continue;
+                        }
+                        break;
+                    }
+                    break;
+                } 
+                case 2: // fix
+                    // system("cls");
+                    break;
+            }
+            continue;
+        case 5:
             exit(0);
             break;
         default:
@@ -200,7 +257,7 @@ int main() {
                 while(true) {
                     cin >> password;
                     if (password.length() < 5 || password.length() >20) {
-                        cout << "Please enter a valid name (between 5 and 20 characters)!" << endl;
+                        cout << "Please enter a valid password (between 5 and 20 characters)!" << endl;
                     } else {
                         break;
                     }
