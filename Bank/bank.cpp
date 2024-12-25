@@ -208,24 +208,27 @@ int main() {
                 system("cls");
                 string name, surname, birthYear, email, password;
                 cout << "Create an Account" << endl;
+                
                 cout << "Name: ";
                 while(true) {
                     cin >> name;
-                    if (name.length() < 3 || name.length() >30) {
-                        cout << "Please enter a valid name (between 3 and 30 characters)!" << endl;
+                    if (name.length() < 3 || name.length() > 30 || !all_of(name.begin(), name.end(), ::isalpha)) {
+                        cout << "Please enter a valid name (between 3 and 30 characters, only letters)!" << endl;
                     } else {
                         break;
                     }
                 }
+                
                 cout << "Surname: ";
                 while(true) {
                     cin >> surname;
-                    if (surname.length() < 2 || surname.length() >30) {
-                        cout << "Please enter a valid surname (between 2 and 30 characters)!" << endl;
+                    if (surname.length() < 2 || surname.length() > 30 || !all_of(surname.begin(), surname.end(), ::isalpha)) {
+                        cout << "Please enter a valid surname (between 2 and 30 characters, only letters)!" << endl;
                     } else {
                         break;
                     }
                 }
+
                 cout << "Birth Year: ";
                 while(true) {
                     cin >> birthYear;
@@ -235,12 +238,13 @@ int main() {
 
                     int currentYear = 1900 + now->tm_year;
 
-                    if (stoi(birthYear) < 1900 || stoi(birthYear) > currentYear - 18) {
-                        cout << "Please enter a valid birth year (between 1900 and " << currentYear - 18 << ")!" << endl;
+                    if (birthYear.length() != 4 || !all_of(birthYear.begin(), birthYear.end(), ::isdigit) || stoi(birthYear) < 1900 || stoi(birthYear) > currentYear - 18) {
+                        cout << "Please enter a valid birth year (4 digits, between 1900 and " << currentYear - 18 << ")!" << endl;
                     } else {
                         break;
                     }
                 }
+
                 cout << "Email: ";
                 while(true) {
                     cin >> email;
@@ -253,10 +257,11 @@ int main() {
                         break;
                     }
                 }
+
                 cout << "Password: ";
                 while(true) {
                     cin >> password;
-                    if (password.length() < 5 || password.length() >20) {
+                    if (password.length() < 5 || password.length() > 20) {
                         cout << "Please enter a valid password (between 5 and 20 characters)!" << endl;
                     } else {
                         break;
