@@ -21,10 +21,11 @@ private:
     string password;
     string accno;
     int balance;
+    int limit;
 
 public:
     BankAccount(string n, string s, string b, string e, string p, string a)
-        : name(n), surname(s), birthYear(b), email(e), password(p), accno(a), balance(0) {}
+        : name(n), surname(s), birthYear(b), email(e), password(p), accno(a), balance(0), limit(0) {}
 
     string getName() const { return name; }
     string getSurname() const { return surname; }
@@ -36,12 +37,17 @@ public:
 
     void addBalance(int amount) { balance += amount; }
     void withdrawBalance(int amount) { balance -= amount; }
+    int getLimit() const { return limit; }
+    void changeLimit(int amount) { limit = amount; }
 };
 
 void showHomepage(BankAccount& account);
+void showSettings(BankAccount& account);
+
 void viewBalance(BankAccount& account);
 void addMoney(BankAccount& account);
 void withdrawMoney(BankAccount& account);
+void changeLimit(BankAccount& account);
 
 bool loginControl(const string& acc_no, const string& password) {
     for (const auto& account : registeredAccounts) {
@@ -57,13 +63,14 @@ void showHomepage(BankAccount& account) {
     int action;
 
     while(true) {
-        cout << "-------------------\nHomepage\n" << endl;
+        cout << "-------------------\nWelcome "<< account.getName() << "!\n" << endl;
         cout << "\nChoose action below" << endl;
         cout << "(1) View Balance" << endl;
         cout << "(2) Add Money" << endl;
         cout << "(3) Withdraw Money" << endl;
         cout << "(4) View Interest Rates" << endl;
-        cout << "(5) Quit" << endl;
+        cout << "(5) Settings" << endl;
+        cout << "(6) Quit" << endl;
         cin >> action;
 
         switch (action)
@@ -75,7 +82,11 @@ void showHomepage(BankAccount& account) {
             addMoney(account);
             break;
         case 3:
-            withdrawMoney(account);
+            if (account.getBalance() == 0) {
+                cout << "\nYour balance is 0!\n" << endl;
+            } else {
+                withdrawMoney(account);
+            }
             break;
         case 4:
             cout << "\n32 Days: 3%" << endl; 
@@ -105,23 +116,23 @@ void showHomepage(BankAccount& account) {
                         if (day == 32) {
                             interestRate = 0.03;
                             interest = money * interestRate * (day / 365.0);
-                            cout << "Interest rate for 32 days is 3%" << endl;
+                            cout << "\nInterest rate for 32 days is 3%" << endl;
                             cout << "Interest earned: " << interest << endl;
                         } 
                         else if (day == 90) {
                             interestRate = 0.04;
                             interest = money * interestRate * (day / 365.0);
-                            cout << "Interest rate for 90 days is 4%" << endl;
+                            cout << "\nInterest rate for 90 days is 4%" << endl;
                             cout << "Interest earned: " << interest << endl;
                         } 
                         else if (day == 180) {
                             interestRate = 0.045;
                             interest = money * interestRate * (day / 365.0);
-                            cout << "Interest rate for 180 days is 4.5%" << endl;
+                            cout << "\nInterest rate for 180 days is 4.5%" << endl;
                             cout << "Interest earned: " << interest << endl;
                         }
                         else {
-                            cout << "Invalid day entered!\n" << endl;
+                            cout << "\nInvalid day entered!\n" << endl;
                             continue;
                         }
                         break;
@@ -134,11 +145,77 @@ void showHomepage(BankAccount& account) {
             }
             continue;
         case 5:
+            showSettings(account);
+            break;
+        case 6:
             exit(0);
             break;
         default:
             cout << "Invalid action. Please select a valid option.\n" << endl;
         }
+    }
+}
+
+void showSettings(BankAccount& account) {
+    int action;
+    int newLimit;
+    string input;
+
+    while(true) {
+        cout << "-------------------\nSettings\n" << endl;
+        cout << "(1) Withdrawal Limit" << endl;
+        cout << "(2) Quit" << endl;
+
+        cin >> action;
+
+        switch (action) {
+            case 1:
+                while(true) {
+                    cout << "\nYour Withdrawal Limit: " << account.getLimit() << endl;
+                    cout << "\n(1) Change Limit" << endl;
+                    cout << "(2) Quit" << endl;
+
+                    cin >> action;
+
+                    switch (action) {
+                        case 1:
+                            while(true) {
+                                cout << "Enter the limit you want (q to quit): ";
+                                cin >> input;
+
+                                if (input == "q") {
+                                    break;
+                                }
+
+                                try {
+                                    newLimit = stoi(input);
+                                    if (newLimit > 0 && newLimit < 50000) {
+                                        account.changeLimit(newLimit);
+                                        cout << "Withdrawal limit updated to " << newLimit << endl;
+                                        break;
+                                    } else {
+                                        cout << "\nNew limit must be between 0 and 50.000!\n" << endl;
+                                    }
+                                } catch (const invalid_argument& e) {
+                                    cout << "Invalid input! Please enter a valid number or 'q' to quit." << endl;
+                                } catch (const out_of_range& e) {
+                                    cout << "Input out of range. Please enter a valid number within the limit." << endl;
+                                }
+                            }
+                            break;
+                        case 2:
+                            break;
+                        default:
+                            break;
+                    }
+                    if (action == 2) break;
+                }
+            case 2:
+                break;
+            default:
+                break;
+        }
+        if (action == 2) break;
     }
 }
 
@@ -169,6 +246,7 @@ void withdrawMoney(BankAccount& account) {
 
 int main() {
     int action;
+    int attempt = 3;
     BankAccount* loggedInAccount = nullptr;
 
     while (true) {
@@ -180,26 +258,41 @@ int main() {
 
         switch(action) {
             case 1: {
-                string acc_no, password;
-                cout << "Account Number: ";
-                cin >> acc_no;
-                cout << "Password: ";
-                cin >> password;
-
-                if (loginControl(acc_no, password)) {
-                    for (auto& account : registeredAccounts) {
-                        if (account.getAccountNumber() == acc_no) {
-                            cout << "Login Successful!" << endl;
-                            cout << "Redirecting to homepage..." << endl;
-                            system("cls");
-
-                            loggedInAccount = &account;
-                            showHomepage(*loggedInAccount);
-                            break;
-                        }
+                while(true) {
+                    if (attempt == 0) {
+                        cout << "You have not attempts left!\n\n";
+                        break;
                     }
-                } else {
-                    cout << "Invalid credentials, please try again!" << endl;
+                    
+                    string acc_no, password;
+                    cout << "Account Number: ";
+                    cin >> acc_no;
+                    if (acc_no == "q") {
+                        break;
+                    }
+                    
+                    cout << "Password: ";
+                    cin >> password;
+                    if (password == "q") {
+                        break;
+                    }
+
+                    if (loginControl(acc_no, password)) {
+                        for (auto& account : registeredAccounts) {
+                            if (account.getAccountNumber() == acc_no) {
+                                cout << "Login Successful!" << endl;
+                                cout << "Redirecting to homepage..." << endl;
+                                system("cls");
+
+                                loggedInAccount = &account;
+                                showHomepage(*loggedInAccount);
+                                break;
+                            }
+                        }
+                    } else {
+                        cout << "Invalid credentials, please try again! (q to quit)" << endl;
+                        attempt -= 1;
+                    }
                 }
                 break;
             }
