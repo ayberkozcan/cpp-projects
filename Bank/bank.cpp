@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <limits>
 #include <string>
 #include <chrono>
@@ -13,7 +14,7 @@ using namespace std;
 vector<class BankAccount> registeredAccounts;
 
 class BankAccount {
-private:
+public:
     string name;
     string surname;
     string birthYear;
@@ -23,7 +24,6 @@ private:
     int balance;
     int limit;
 
-public:
     BankAccount(string n, string s, string b, string e, string p, string a)
         : name(n), surname(s), birthYear(b), email(e), password(p), accno(a), balance(0), limit(0) {}
 
@@ -49,14 +49,52 @@ void addMoney(BankAccount& account);
 void withdrawMoney(BankAccount& account);
 void changeLimit(BankAccount& account);
 
-bool loginControl(const string& acc_no, const string& password) {
-    for (const auto& account : registeredAccounts) {
-        if (account.getAccountNumber() == acc_no && account.getPassword() == password) {
-            return true;
-        } else {
-            return false;
+void saveAccount(const BankAccount& account, const string& filename) {
+    ofstream file(filename, ios::app);
+    if (file.is_open()) {
+        file << account.name << " " << account.surname << " "
+             << account.birthYear << " " << account.email << " "
+             << account.password << " " << account.accno << endl;
+        file.close();
+    } else {
+        cerr << "Error: Could not open file!" << endl;
+    }
+}
+
+vector<BankAccount> loadAccount(const string& filename) {
+    ifstream file(filename);
+    vector<BankAccount> accounts;
+
+    if (file.is_open()) {
+        string name, surname, birthYear, email, password, accno;
+
+        while (file >> name >> surname >> birthYear >> email >> password >> accno) {
+            accounts.emplace_back(name, surname, birthYear, email, password, accno);
+        }
+        file.close();
+    } else {
+        cerr << "Error: Could not open file!" << endl;
+    }
+
+    return accounts;
+}
+
+BankAccount* loginControl(const string& acc_no, const string& password, const string& filename) {
+    ifstream file(filename);
+    if (!file.is_open()) {
+        cerr << "Error: Could not open file!" << endl;
+        return nullptr;
+    }
+
+    string name, surname, birthYear, email, pwd, account_number;
+
+    while (file >> name >> surname >> birthYear >> email >> pwd >> account_number) {
+        if (account_number == acc_no && pwd == password) {
+            return new BankAccount(name, surname, birthYear, email, pwd, acc_no);
         }
     }
+
+    return nullptr;
 }
 
 void showHomepage(BankAccount& account) {
@@ -249,6 +287,9 @@ int main() {
     int attempt = 3;
     BankAccount* loggedInAccount = nullptr;
 
+    string filename = "accounts.txt";
+    vector<BankAccount> registeredAccounts;
+
     while (true) {
         cout << "Welcome!" << endl;
         cout << "(1) Login" << endl;
@@ -277,18 +318,14 @@ int main() {
                         break;
                     }
 
-                    if (loginControl(acc_no, password)) {
-                        for (auto& account : registeredAccounts) {
-                            if (account.getAccountNumber() == acc_no) {
-                                cout << "Login Successful!" << endl;
-                                cout << "Redirecting to homepage..." << endl;
-                                system("cls");
+                    BankAccount* loggedInAccount = loginControl(acc_no, password, filename);
+                    if (loggedInAccount != nullptr) {
+                        cout << "Login Successful!" << endl;
+                        cout << "Redirecting to homepage..." << endl;
+                        system("cls");
 
-                                loggedInAccount = &account;
-                                showHomepage(*loggedInAccount);
-                                break;
-                            }
-                        }
+                        showHomepage(*loggedInAccount);
+                        delete loggedInAccount;
                     } else {
                         cout << "Invalid credentials, please try again! (q to quit)" << endl;
                         attempt -= 1;
@@ -366,6 +403,8 @@ int main() {
 
                 BankAccount newAccount(name, surname, birthYear, email, password, accno);
                 registeredAccounts.push_back(newAccount);
+
+                saveAccount(newAccount, filename);
 
                 system("cls");
                 cout << "Account created successfully!" << endl;
