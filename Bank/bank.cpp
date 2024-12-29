@@ -24,8 +24,8 @@ public:
     int balance;
     int limit;
 
-    BankAccount(string n, string s, string b, string e, string p, string a)
-        : name(n), surname(s), birthYear(b), email(e), password(p), accno(a), balance(0), limit(0) {}
+    BankAccount(string n, string s, string b, string e, string p, string a, int ba, int l)
+        : name(n), surname(s), birthYear(b), email(e), password(p), accno(a), balance(ba), limit(l) {}
 
     string getName() const { return name; }
     string getSurname() const { return surname; }
@@ -45,7 +45,8 @@ void showHomepage(BankAccount& account);
 void showSettings(BankAccount& account);
 
 void viewBalance(BankAccount& account);
-void addMoney(BankAccount& account);
+// void addMoney(BankAccount& account);
+void addMoney(BankAccount& account, const string& filename);
 void withdrawMoney(BankAccount& account);
 void changeLimit(BankAccount& account);
 
@@ -54,7 +55,8 @@ void saveAccount(const BankAccount& account, const string& filename) {
     if (file.is_open()) {
         file << account.name << " " << account.surname << " "
              << account.birthYear << " " << account.email << " "
-             << account.password << " " << account.accno << endl;
+             << account.password << " " << account.accno << " "
+             << account.balance << account.limit << endl;
         file.close();
     } else {
         cerr << "Error: Could not open file!" << endl;
@@ -67,9 +69,10 @@ vector<BankAccount> loadAccount(const string& filename) {
 
     if (file.is_open()) {
         string name, surname, birthYear, email, password, accno;
+        int balance, limit;
 
-        while (file >> name >> surname >> birthYear >> email >> password >> accno) {
-            accounts.emplace_back(name, surname, birthYear, email, password, accno);
+        while (file >> name >> surname >> birthYear >> email >> password >> accno >> balance >> limit) {
+            accounts.emplace_back(name, surname, birthYear, email, password, accno, balance, limit);
         }
         file.close();
     } else {
@@ -87,10 +90,11 @@ BankAccount* loginControl(const string& acc_no, const string& password, const st
     }
 
     string name, surname, birthYear, email, pwd, account_number;
+    int balance, limit;
 
-    while (file >> name >> surname >> birthYear >> email >> pwd >> account_number) {
+    while (file >> name >> surname >> birthYear >> email >> pwd >> account_number >> balance >> limit) {
         if (account_number == acc_no && pwd == password) {
-            return new BankAccount(name, surname, birthYear, email, pwd, acc_no);
+            return new BankAccount(name, surname, birthYear, email, pwd, acc_no, balance, limit);
         }
     }
 
@@ -99,6 +103,7 @@ BankAccount* loginControl(const string& acc_no, const string& password, const st
 
 void showHomepage(BankAccount& account) {
     int action;
+    string filename = "accounts.txt";
 
     while(true) {
         cout << "-------------------\nWelcome "<< account.getName() << "!\n" << endl;
@@ -117,7 +122,7 @@ void showHomepage(BankAccount& account) {
             viewBalance(account);
             break;
         case 2:
-            addMoney(account);
+            addMoney(account, filename);
             break;
         case 3:
             if (account.getBalance() == 0) {
@@ -261,12 +266,59 @@ void viewBalance(BankAccount& account) {
     cout << "Balance: " << account.getBalance() << endl;
 }
 
-void addMoney(BankAccount& account) {
-    int money;
-    cout << "How much money you want to add?" << endl;
-    cin >> money;
-    account.addBalance(money);
-    cout << money << " $ added to your balance." << endl;
+void addMoney(BankAccount& account, const string& filename) {
+    ifstream file(filename);
+    if (!file.is_open()) {
+        cerr << "Error: Could not open file!" << endl;
+        return;
+    }
+
+    vector<string> lines;
+    string line;
+    bool accountFound = false;
+
+    while (getline(file, line)) {
+        istringstream iss(line);
+        string name, surname, birthYear, email, pwd, account_number;
+        int balance, limit;
+
+        if (iss >> name >> surname >> birthYear >> email >> pwd >> account_number >> balance >> limit) {
+            if (account_number == account.getAccountNumber()) {
+                accountFound = true;
+                int money;
+                cout << "How much money you want to add?" << endl;
+                cin >> money;
+
+                balance += money;
+                cout << money << " $ added to your balance." << endl;
+
+                account.addBalance(money);
+
+                line = name + " " + surname + " " + birthYear + " " + email + " " + pwd + " " + account_number + " " + to_string(balance) + " " + to_string(limit);
+            }
+        }
+
+        lines.push_back(line);
+    }
+
+    file.close();
+
+    if (!accountFound) {
+        cout << "Account not found!" << endl;
+        return;
+    }
+
+    ofstream outFile(filename);
+    if (!outFile.is_open()) {
+        cerr << "Error: Could not open file for writing!" << endl;
+        return;
+    }
+
+    for (const auto& updatedLine : lines) {
+        outFile << updatedLine << endl;
+    }
+
+    outFile.close();
 }
 
 void withdrawMoney(BankAccount& account) {
@@ -401,7 +453,7 @@ int main() {
                 srand(time(nullptr));
                 string accno = to_string(10000 + rand() % 90000);
 
-                BankAccount newAccount(name, surname, birthYear, email, password, accno);
+                BankAccount newAccount(name, surname, birthYear, email, password, accno, 0, 1000);
                 registeredAccounts.push_back(newAccount);
 
                 saveAccount(newAccount, filename);
