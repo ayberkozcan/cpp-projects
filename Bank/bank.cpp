@@ -45,8 +45,7 @@ void showHomepage(BankAccount& account);
 void showSettings(BankAccount& account);
 
 void viewBalance(BankAccount& account);
-// void addMoney(BankAccount& account);
-void addMoney(BankAccount& account, const string& filename);
+void manageBalance(BankAccount& account, const string& filename, const string& operation);
 void withdrawMoney(BankAccount& account);
 void changeLimit(BankAccount& account);
 
@@ -122,13 +121,13 @@ void showHomepage(BankAccount& account) {
             viewBalance(account);
             break;
         case 2:
-            addMoney(account, filename);
+            manageBalance(account, filename, "add");
             break;
         case 3:
             if (account.getBalance() == 0) {
                 cout << "\nYour balance is 0!\n" << endl;
             } else {
-                withdrawMoney(account);
+                manageBalance(account, filename, "withdraw");
             }
             break;
         case 4:
@@ -266,71 +265,115 @@ void viewBalance(BankAccount& account) {
     cout << "Balance: " << account.getBalance() << endl;
 }
 
-void addMoney(BankAccount& account, const string& filename) {
+void manageBalance(BankAccount& account, const string& filename, const string& operation) {
     ifstream file(filename);
     if (!file.is_open()) {
         cerr << "Error: Could not open file!" << endl;
         return;
     }
 
-    vector<string> lines;
-    string line;
-    bool accountFound = false;
+    if (operation == "add") {
+        vector<string> lines;
+        string line;
+        bool accountFound = false;
 
-    while (getline(file, line)) {
-        istringstream iss(line);
-        string name, surname, birthYear, email, pwd, account_number;
-        int balance, limit;
+        while (getline(file, line)) {
+            istringstream iss(line);
+            string name, surname, birthYear, email, pwd, account_number;
+            int balance, limit;
 
-        if (iss >> name >> surname >> birthYear >> email >> pwd >> account_number >> balance >> limit) {
-            if (account_number == account.getAccountNumber()) {
-                accountFound = true;
-                int money;
-                cout << "How much money you want to add?" << endl;
-                cin >> money;
+            if (iss >> name >> surname >> birthYear >> email >> pwd >> account_number >> balance >> limit) {
+                if (account_number == account.getAccountNumber()) {
+                    accountFound = true;
+                    int money;
+                    cout << "\nHow much money you want to add?" << endl;
+                    cin >> money;
 
-                balance += money;
-                cout << money << " $ added to your balance." << endl;
+                    balance += money;
+                    cout << money << " $ added to your balance." << endl;
 
-                account.addBalance(money);
+                    account.addBalance(money);
 
-                line = name + " " + surname + " " + birthYear + " " + email + " " + pwd + " " + account_number + " " + to_string(balance) + " " + to_string(limit);
+                    line = name + " " + surname + " " + birthYear + " " + email + " " + pwd + " " + account_number + " " + to_string(balance) + " " + to_string(limit);
+                }
             }
+
+            lines.push_back(line);
         }
 
-        lines.push_back(line);
+        file.close();
+
+        if (!accountFound) {
+            cout << "Account not found!" << endl;
+            return;
+        }
+
+        ofstream outFile(filename);
+        if (!outFile.is_open()) {
+            cerr << "Error: Could not open file for writing!" << endl;
+            return;
+        }
+
+        for (const auto& updatedLine : lines) {
+            outFile << updatedLine << endl;
+        }
+
+        outFile.close();
     }
 
-    file.close();
+    else if (operation == "withdraw") {
+        vector<string> lines;
+        string line;
+        bool accountFound = false;
 
-    if (!accountFound) {
-        cout << "Account not found!" << endl;
-        return;
-    }
+        while (getline(file, line)) {
+            istringstream iss(line);
+            string name, surname, birthYear, email, pwd, account_number;
+            int balance, limit;
 
-    ofstream outFile(filename);
-    if (!outFile.is_open()) {
-        cerr << "Error: Could not open file for writing!" << endl;
-        return;
-    }
+            if (iss >> name >> surname >> birthYear >> email >> pwd >> account_number >> balance >> limit) {
+                if (account_number == account.getAccountNumber()) {
+                    accountFound = true;
+                    int money;
+                    cout << "\nHow much money you want to withdraw?\nYour withdrawal limit is: " << limit << endl;
+                    cin >> money;
 
-    for (const auto& updatedLine : lines) {
-        outFile << updatedLine << endl;
-    }
+                    if (money > balance) {
+                        cout << "\nInsufficient balance!" << endl;
+                    } else if (money > limit) {
+                        cout << "\nThe amount you want to withdraw exceeds your withdrawal limit.\nYou can change your limit in the settings menu!" << endl;
+                    } else {
+                        balance -= money;
+                        cout << money << " $ withdrawn from your balance." << endl;
 
-    outFile.close();
-}
+                        account.withdrawBalance(money);
 
-void withdrawMoney(BankAccount& account) {
-    int money;
-    cout << "How much money you want to withdraw?" << endl;
-    cin >> money;
+                        line = name + " " + surname + " " + birthYear + " " + email + " " + pwd + " " + account_number + " " + to_string(balance) + " " + to_string(limit);
+                    }
+                }
+            }
 
-    if (money > account.getBalance()) {
-        cout << "Insufficient balance!" << endl;
-    } else {
-        account.withdrawBalance(money);
-        cout << money << " $ withdrawn from your balance." << endl;
+            lines.push_back(line);
+        }
+
+        file.close();
+
+        if (!accountFound) {
+            cout << "Account not found!" << endl;
+            return;
+        }
+
+        ofstream outFile(filename);
+        if (!outFile.is_open()) {
+            cerr << "Error: Could not open file for writing!" << endl;
+            return;
+        }
+
+        for (const auto& updatedLine : lines) {
+            outFile << updatedLine << endl;
+        }
+
+        outFile.close();
     }
 }
 
