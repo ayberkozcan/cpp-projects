@@ -48,6 +48,7 @@ void viewBalance(BankAccount& account);
 void manageBalance(BankAccount& account, const string& filename, const string& operation);
 void withdrawMoney(BankAccount& account);
 void changeLimit(BankAccount& account);
+void updateLimit(BankAccount& account, const string& filename, const string& newLimit);
 
 void saveAccount(const BankAccount& account, const string& filename) {
     ofstream file(filename, ios::app);
@@ -232,7 +233,7 @@ void showSettings(BankAccount& account) {
                                 try {
                                     newLimit = stoi(input);
                                     if (newLimit > 0 && newLimit < 50000) {
-                                        account.changeLimit(newLimit);
+                                        updateLimit(account, "accounts.txt", to_string(newLimit));
                                         cout << "Withdrawal limit updated to " << newLimit << endl;
                                         break;
                                     } else {
@@ -263,6 +264,57 @@ void showSettings(BankAccount& account) {
 
 void viewBalance(BankAccount& account) {
     cout << "Balance: " << account.getBalance() << endl;
+}
+
+void updateLimit(BankAccount& account, const string& filename, const string& newLimit) {
+    ifstream file(filename);
+    if (!file.is_open()) {
+        cerr << "Error: Could not open file!" << endl;
+        return;
+    }
+
+    vector<string> lines;
+    string line;
+    bool accountFound = false;
+
+    while (getline(file, line)) {
+        istringstream iss(line);
+        string name, surname, birthYear, email, pwd, account_number;
+        int balance, limit;
+
+        if (iss >> name >> surname >> birthYear >> email >> pwd >> account_number >> balance >> limit) {
+                if (account_number == account.getAccountNumber()) {
+                    accountFound = true;
+
+                    account.changeLimit(stoi(newLimit));
+
+                    limit = stoi(newLimit);
+
+                    line = name + " " + surname + " " + birthYear + " " + email + " " + pwd + " " + account_number + " " + to_string(balance) + " " + to_string(limit);
+                }
+            }
+
+        lines.push_back(line);
+    }
+
+    file.close();
+
+    if (!accountFound) {
+            cout << "Account not found!" << endl;
+            return;
+        }
+
+        ofstream outFile(filename);
+        if (!outFile.is_open()) {
+            cerr << "Error: Could not open file for writing!" << endl;
+            return;
+        }
+
+        for (const auto& updatedLine : lines) {
+            outFile << updatedLine << endl;
+        }
+
+        outFile.close();
 }
 
 void manageBalance(BankAccount& account, const string& filename, const string& operation) {
