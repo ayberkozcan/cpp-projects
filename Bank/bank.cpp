@@ -182,8 +182,7 @@ void showHomepage(BankAccount& account) {
                     }
                     break;
                 } 
-                case 2: // fix
-                    // system("cls");
+                case 2:
                     break;
             }
             continue;
@@ -234,7 +233,7 @@ void showSettings(BankAccount& account) {
                                     newLimit = stoi(input);
                                     if (newLimit > 0 && newLimit < 50000) {
                                         updateLimit(account, "accounts.txt", to_string(newLimit));
-                                        cout << "Withdrawal limit updated to " << newLimit << endl;
+                                        cout << "\nWithdrawal limit updated to " << newLimit << endl;
                                         break;
                                     } else {
                                         cout << "\nNew limit must be between 0 and 50.000!\n" << endl;
@@ -341,12 +340,16 @@ void manageBalance(BankAccount& account, const string& filename, const string& o
                     cout << "\nHow much money you want to add?" << endl;
                     cin >> money;
 
-                    balance += money;
-                    cout << money << " $ added to your balance." << endl;
+                    if (money < 0) {
+                        cout << "\nThe amount must be valid!" << endl;
+                    } else {
+                        balance += money;
+                        cout << money << " $ added to your balance." << endl;
 
-                    account.addBalance(money);
+                        account.addBalance(money);
 
-                    line = name + " " + surname + " " + birthYear + " " + email + " " + pwd + " " + account_number + " " + to_string(balance) + " " + to_string(limit);
+                        line = name + " " + surname + " " + birthYear + " " + email + " " + pwd + " " + account_number + " " + to_string(balance) + " " + to_string(limit);
+                    }
                 }
             }
 
@@ -392,6 +395,8 @@ void manageBalance(BankAccount& account, const string& filename, const string& o
 
                     if (money > balance) {
                         cout << "\nInsufficient balance!" << endl;
+                    } else if (money < 0) {
+                        cout << "\nThe amount must be valid!" << endl;
                     } else if (money > limit) {
                         cout << "\nThe amount you want to withdraw exceeds your withdrawal limit.\nYou can change your limit in the settings menu!" << endl;
                     } else {
