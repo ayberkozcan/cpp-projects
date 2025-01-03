@@ -16,4 +16,13 @@ The **Bank Project** simulates basic banking operations, allowing users to perfo
 
 This project uses basic object-oriented programming (OOP) principles, including classes and methods, to structure the application. It also implements basic input and output handling to make it interactive.
 
+### 2. To Do
+The To-Do List Application manages tasks with features like adding, editing, deleting, and saving tasks to a file (notes.txt). Key functionalities include:
+
+- **Load Tasks**: Reads tasks from a file, if available.
+- **Add/Edit/Delete Tasks**: Allows users to manage tasks interactively.
+- **Save Changes**: Updates the file to persist changes.
+
+This project demonstrates file handling, dynamic task management using std::vector, and a menu-driven structure with basic error handling.
+
 ---
