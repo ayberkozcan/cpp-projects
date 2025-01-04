@@ -2,12 +2,13 @@
 #include <fstream>
 #include <limits>
 #include <string>
-#include <chrono>
-#include <thread>
-#include <cstdlib>
-#include <ctime>
 #include <vector>
 #include <regex>
+
+#include <cstdlib>
+#include <ctime>
+#include <chrono>
+#include <thread>
 
 using namespace std;
 
