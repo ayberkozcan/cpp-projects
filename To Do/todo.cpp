@@ -31,52 +31,61 @@ void writeFile(const std::string& filename, std::vector<std::string>& lines) {
 
 void editFile(std::vector<std::string>& lines) {
     int choose;
+    std::string newTask;
+
     do {
-        std::cout << "\n1. Show all lines\n";
-        std::cout << "2. Add a new line\n";
-        std::cout << "3. Edit a line\n";
-        std::cout << "4. Delete a line\n";
-        std::cout << "0. Quit\n";
+        std::cout << "\n1. Show all tasks\n";
+        std::cout << "2. Add a new task\n";
+        std::cout << "3. Edit a task\n";
+        std::cout << "4. Delete a task\n";
+        std::cout << "0. Quit\n\n";
         std::cout << "Choose: ";
         std::cin >> choose;
         std::cin.ignore();
 
         switch (choose) {
             case 1:
-                std::cout << "\nContent:\n";
-                for (size_t i = 0; i < lines.size(); i++) {
-                    std::cout << i + 1 << ". " << lines[i] << "\n";
+                if (lines.size() == 0) {
+                    std::cout << "\nNo Tasks Found!\n";
                 }
+                else {
+                    std::cout << "\nTasks:\n";
+                    
+                    for (size_t i = 0; i < lines.size(); i++) {
+                        std::cout << i + 1 << ". " << lines[i] << "\n";
+                    }
+                }
+                
                 break;
             case 2:
-                std::cout << "Write the line which you want to add: ";
-                // std::string newLine;
-                // std::getline(std::cin, newLine);
-                // lines.push_back(newLine);
+                std::cout << "\nWrite the task: ";
+                std::getline(std::cin, newTask);
+                lines.push_back(newTask);
+                std::cout << "\nTask added!\n";
                 break;
             case 3:
-                std::cout << "Write the line number you want to edit: ";
+                std::cout << "\nWrite the task number you want to edit: ";
                 size_t lineNo;
                 std::cin >> lineNo;
                 std::cin.ignore();
                 if (lineNo > 0 && lineNo <= lines.size()) {
-                    std::cout << "Write new content: ";
+                    std::cout << "Write new task: ";
                     std::getline(std::cin, lines[lineNo - 1]);
                 }
                 else {
-                    std::cout << "Invalid line number!\n";
+                    std::cout << "Invalid task number!\n";
                 }
                 break;
             case 4:
-                std::cout << "Write the line number you want to delete: ";
+                std::cout << "\nWrite the task number you want to delete: ";
                 std::cin >> lineNo;
                 std::cin.ignore();
                 if (lineNo > 0 && lineNo <= lines.size()) {
                     lines.erase(lines.begin() + lineNo - 1);
-                    std::cout << "Line removed.\n";
+                    std::cout << "Task removed.\n";
                 }
                 else {
-                    std::cout << "Invalid line number!\n";
+                    std::cout << "Invalid task number!\n";
                 }
                 break;
             case 0:
